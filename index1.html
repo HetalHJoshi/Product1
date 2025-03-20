@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Product List</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+
+<body>
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>Product List</h2>
+            <div>
+                <a href="product1.html?mode=add" class="btn btn-primary mr-2">Add Product</a>
+                <button class="btn btn-warning" onclick="clearStorage()">Clear Storage</button>
+            </div>
+        </div>
+
+        <!-- Filtering Section -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Filters</h5>
+                <div class="form-row">
+                    <div class="form-group col-md-3">
+                        <input type="text" id="filterId" class="form-control" placeholder="Filter by Product ID"
+                            oninput="renderProductTable()">
+                    </div>
+                    <div class="form-group col-md-3">
+                        <input type="text" id="filterName" class="form-control" placeholder="Filter by Product Name"
+                            oninput="renderProductTable()">
+                    </div>
+                    <div class="form-group col-md-3">
+                        <input type="text" id="filterDescription" class="form-control"
+                            placeholder="Filter by Description" oninput="renderProductTable()">
+                    </div>
+                    <div class="form-group col-md-3">
+                        <input type="text" id="filterPrice" class="form-control" placeholder="Filter by Price"
+                            oninput="renderProductTable()">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sorting Section -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Sort Options</h5>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="sortBy">Sort By:</label>
+                        <select id="sortBy" class="form-control" onchange="renderProductTable()">
+                            <option value="">None</option>
+                            <option value="id">Product ID</option>
+                            <option value="name">Product Name</option>
+                            <option value="price">Price</option>
+                            <option value="description">Description</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="sortOrder">Sort Order:</label>
+                        <select id="sortOrder" class="form-control" onchange="renderProductTable()">
+                            <option value="asc">Ascending</option>
+                            <option value="desc">Descending</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Product ID</th>
+                        <th>Product Name</th>
+                        <th>Image</th>
+                        <th>Price</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="productTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let products = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProducts();
+            renderProductTable();
+        });
+
+        function loadProducts() {
+            const storedProducts = localStorage.getItem('products');
+            products = storedProducts ? JSON.parse(storedProducts) : [];
+        }
+
+        function saveProducts() {
+            localStorage.setItem('products', JSON.stringify(products));
+        }
+
+        function renderProductTable() {
+            const tbody = document.getElementById('productTableBody');
+            tbody.innerHTML = '';
+
+            let filteredProducts = products.filter(product => {
+                return (!document.getElementById('filterId').value || product.id.includes(document.getElementById('filterId').value)) &&
+                    (!document.getElementById('filterName').value || product.name.toLowerCase().includes(document.getElementById('filterName').value.toLowerCase())) &&
+                    (!document.getElementById('filterDescription').value || product.description.toLowerCase().includes(document.getElementById('filterDescription').value.toLowerCase())) &&
+                    (!document.getElementById('filterPrice').value || product.price.toString().includes(document.getElementById('filterPrice').value));
+            });
+
+            const sortKey = document.getElementById('sortBy').value;
+            const sortOrder = document.getElementById('sortOrder').value;
+
+            if (sortKey) {
+                filteredProducts.sort((a, b) => {
+                    let aValue = sortKey === 'price' ? parseFloat(a[sortKey]) : a[sortKey].toLowerCase();
+                    let bValue = sortKey === 'price' ? parseFloat(b[sortKey]) : b[sortKey].toLowerCase();
+                    return sortOrder === 'asc' ? (aValue > bValue ? 1 : -1) : (aValue < bValue ? 1 : -1);
+                });
+            }
+
+            filteredProducts.forEach(product => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${product.id}</td>
+                    <td>${product.name}</td>
+                    <td><img src="${product.image}" alt="${product.name}" width="50"></td>
+                    <td>${product.price}</td>
+                    <td>${product.description}</td>
+                    <td>
+                        <a href="product1.html?mode=edit&id=${product.id}" class="btn btn-sm btn-info">Edit</a>
+                        <button class="btn btn-sm btn-danger" onclick="deleteProduct('${product.id}')">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function clearFilters() {
+            document.getElementById('filterId').value = '';
+            document.getElementById('filterName').value = '';
+            document.getElementById('filterDescription').value = '';
+            document.getElementById('filterPrice').value = '';
+            document.getElementById('sortBy').value = '';
+            document.getElementById('sortOrder').value = 'asc';
+            renderProductTable();
+        }
+
+        function clearStorage() {
+            if (confirm('Are you sure you want to clear all products?')) {
+                localStorage.removeItem('products');
+                products = [];
+                renderProductTable();
+            }
+        }
+    </script>
+</body>
+
+</html>
