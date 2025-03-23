@@ -1,67 +1,62 @@
-# Product Management System
+# 🛍️ Product Management System
 
-This is a **Product Management System** built using **HTML, CSS, JavaScript, and Bootstrap**. The application allows users to create, update, view, and manage products with **localStorage** for data persistence. It also supports **filtering, sorting, and routing for product view/edit** operations.
+A simple web-based Product Management System built with **HTML**, **CSS**, **JavaScript**, and **Bootstrap**. It allows users to **add, edit, delete, filter, and sort products** with data saved using **localStorage**.
 
-## Features
+---
 
-### **Product Attributes:**
-- **Product ID** (Unique Identifier)
+## 🔧 Features
+
+### Product Fields
+
+- **Product ID** (Auto-generated)
 - **Product Name**
-- **Image URL**
+- **Product Image**
 - **Price**
 - **Description**
 
-### **Core Functionalities:**
-- **Create Product:** Add new products with proper validation.
-- **Update Product:** Edit existing product details.
-- **Delete Product:** Remove a product from the list.
-- **View Product List:** Display all stored products.
-- **Filter Products:** Filter by Product ID.
-- **Sort Products:** Sort by **Product ID, Product Name, and Price**.
-- **Local Storage:** Persist products using `localStorage`.
-- **Routing Support:** Use query parameters to handle view/edit actions.
+### Core Functions
 
-## Implementation Details
-- **Validation:** Ensures correct input for all fields (e.g., numeric price, valid image URL).
-- **Filtering:** Users can search for products using Product ID.
-- **Sorting:** Products can be sorted **ascending/descending** based on ID, Name, or Price.
-- **LocalStorage:** Stores all product details persistently in the browser.
-- **Bootstrap UI:** Provides a responsive and user-friendly interface.
+- **Add Product** – Form with real-time validation
+- **Edit Product** – Update details using URL query params
+- **Delete Product** – With confirmation and success popup
+- **View Products** – Displayed in card layout
+- **Filter Products** – By ID, Name, Price, or Description
+- **Sort Products** – By ID, Name, Price, or Description (asc/desc)
+- **Responsive UI** – Bootstrap layout with 2-column design
+- **Persistent Storage** – All data stored in `localStorage`
 
-## Installation & Usage
-1. Clone the repository:
-   ```sh
-   git clone https://github.com/yourusername/product-management-system.git
-   ```
-2. Navigate to the project directory:
-   ```sh
-   cd product-management-system
-   ```
-3. Open `index.html` in a browser to start using the application.
+---
 
-## File Structure
-```
-product-management-system/
-│── index.html         # Product List Page
-│── product.html       # Product Form (Add/Edit)
-│── styles.css         # Styling for the application
-│── script.js          # Main product management logic
-│── utils.js           # Utility functions
-│── README.md          # Project documentation
-```
+## ✅ Validation Rules
 
-## Usage Instructions
-- **Add Product:** Click the **Add Product** button and fill in the form.
-- **Edit Product:** Click **Edit** on a product row to modify details.
-- **Delete Product:** Click **Delete** to remove a product.
-- **Filter Products:** Enter a Product ID in the filter input.
-- **Sort Products:** Choose a sorting option (ID, Name, or Price) from the dropdown.
-- **Clear Storage:** Click **Clear Storage** to remove all stored products.
+| Field            | Rules                                                                      |
+| ---------------- | -------------------------------------------------------------------------- |
+| **Name**         | Required, min **2 characters**                                             |
+| **Image Upload** | Required for new products, valid image formats only (JPG/PNG), max **1MB** |
+| **Price**        | Must be a number **greater than 0**                                        |
+| **Description**  | Required, min **10 characters**                                            |
+| **Real-Time**    | Fields validate instantly as the user types                                |
 
-## License
-This project is open-source and available under the **MIT License**.
+---
 
-## Author
-- **Your Name**
-- GitHub: [yourusername](https://github.com/yourusername)
-- Email: your.email@example.com
+## 📦 How to Use
+
+1. Click **"Add Product"** to create a new entry.
+2. Use the **Edit** button to update product info.
+3. Click **Delete** to remove a product (with confirmation).
+4. Use **Filter inputs** to search specific products.
+5. Use **Sort dropdowns** to organize products.
+6. If no results are found, a clear message is shown.
+7. Data is saved in `localStorage` and persists between sessions.
+
+---
+
+## 💡 Tech Stack
+
+- HTML5
+- CSS3
+- Bootstrap 4
+- JavaScript (ES6)
+- LocalStorage
+
+---

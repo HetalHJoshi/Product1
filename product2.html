@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Product Form</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .card {
+            border-radius: 0.75rem;
+        }
+
+        .image-preview-card img {
+            border-radius: 0.5rem;
+            background: #fff;
+            border: 1px solid #dee2e6;
+        }
+
+        #pageHeader {
+            font-weight: 600;
+            font-size: 1.75rem;
+            color: #343a40;
+        }
+
+        label {
+            font-weight: 500;
+        }
+
+        .form-control:focus {
+            box-shadow: none;
+            border-color: #86b7fe;
+        }
+
+        .btn {
+            font-weight: 500;
+            border-radius: 0.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="#">MyCompany</a>
+            <div class="ml-auto">
+                <a href="product2.html?mode=add" class="btn btn-outline-light d-none" id="addProductBtn">Add Product</a>
+                <a href="index2.html" class="btn btn-outline-light" id="goBackBtn">Go to Product List</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="container mt-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body py-3 px-4">
+                <h2 id="pageHeader" class="mb-0">Add Product</h2>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Left: Image Preview -->
+            <div class="col-md-4 d-flex align-items-start justify-content-center mb-4">
+                <div class="card image-preview-card p-3 w-100 text-center shadow-sm">
+                    <h5 class="mb-3">Image Preview</h5>
+                    <img id="imagePreview" src="https://placehold.co/300x300?text=Product+Image&font=roboto"
+                        alt="Product Preview" class="img-fluid m-3 border"
+                        style="object-fit: cover; max-height: 300px; padding: 9px;" />
+                </div>
+            </div>
+
+            <!-- Right: Product Form -->
+            <div class="col-md-8">
+                <div class="card shadow-sm">
+                    <div class="card-body p-4">
+                        <form id="productForm" novalidate>
+                            <div class="form-group">
+                                <label for="productName">Product Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="productName" required />
+                                <div class="invalid-feedback">Please enter a product name (min 2 characters).</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="productImage">Image Upload <span class="text-danger">*</span></label>
+                                <input type="file" class="form-control-file" id="productImage" accept="image/*" />
+                                <div class="invalid-feedback">Please upload a valid product image (JPG, PNG, etc).</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="productPrice">Price <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="productPrice" min="0" step="0.01"
+                                    required />
+                                <div class="invalid-feedback">Please enter a valid price greater than 0.</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="productDescription">Description <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="productDescription" rows="3" required></textarea>
+                                <div class="invalid-feedback">Please enter a product description (min 10 characters).
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-success">Save</button>
+                            <a href="index2.html" class="btn btn-secondary ml-2">Cancel</a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content text-center">
+                <div class="modal-body p-4">
+                    <h5 id="successMessage" class="mb-0">Product saved successfully.</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script -->
+    <script>
+        let products = [];
+        let editingProductId = null;
+        let isEditMode = false;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProducts();
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const mode = urlParams.get('mode');
+            const id = urlParams.get('id');
+
+            if (mode === 'edit' && id) {
+                isEditMode = true;
+                editingProductId = id;
+
+                const product = products.find(p => p.id === editingProductId);
+                if (product) {
+                    document.getElementById('pageHeader').textContent = 'Edit Product';
+                    document.getElementById('productName').value = product.name;
+                    document.getElementById('productPrice').value = product.price;
+                    document.getElementById('productDescription').value = product.description;
+
+                    const imagePreview = document.getElementById('imagePreview');
+                    imagePreview.src = product.image;
+                }
+            }
+
+            document.getElementById('productForm').addEventListener('submit', handleFormSubmit);
+            document.getElementById('productImage').addEventListener('change', previewImage);
+
+            setupLiveValidation(); // Setup real-time validation
+        });
+
+        function loadProducts() {
+            const storedProducts = localStorage.getItem('products');
+            products = storedProducts ? JSON.parse(storedProducts) : [];
+        }
+
+        function saveProducts() {
+            localStorage.setItem('products', JSON.stringify(products));
+        }
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('productName');
+            const price = document.getElementById('productPrice');
+            const description = document.getElementById('productDescription');
+            const image = document.getElementById('productImage');
+
+            let isValid = true;
+
+            if (!name.value.trim() || name.value.trim().length < 2) {
+                name.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                name.classList.remove('is-invalid');
+            }
+
+            if (!price.value.trim() || isNaN(price.value) || Number(price.value) <= 0) {
+                price.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                price.classList.remove('is-invalid');
+            }
+
+            if (!description.value.trim() || description.value.trim().length < 10) {
+                description.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                description.classList.remove('is-invalid');
+            }
+
+            if (!isEditMode && image.files.length === 0) {
+                image.classList.add('is-invalid');
+                isValid = false;
+            } else if (image.files.length > 0 && (!image.files[0].type.startsWith('image/') || image.files[0].size > 1048576)) {
+                image.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                image.classList.remove('is-invalid');
+            }
+
+            if (!isValid) return;
+
+            const nameValue = name.value.trim();
+            const priceValue = price.value.trim();
+            const descriptionValue = description.value.trim();
+
+            if (image.files.length > 0) {
+                const file = image.files[0];
+                if (file.size > 1048576) {
+                    alert("Image file size should not exceed 1MB.");
+                    image.value = '';
+                    document.getElementById('imagePreview').src = "https://placehold.co/300x300?text=Product+Image&font=roboto";
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    saveProduct(nameValue, event.target.result, priceValue, descriptionValue);
+                };
+                reader.readAsDataURL(file);
+            } else if (editingProductId) {
+                const existingProduct = products.find(p => p.id === editingProductId);
+                saveProduct(nameValue, existingProduct.image, priceValue, descriptionValue);
+            }
+        }
+
+        function saveProduct(name, image, price, description) {
+            if (editingProductId) {
+                const index = products.findIndex(p => p.id === editingProductId);
+                if (index !== -1) {
+                    products[index] = { id: editingProductId, name, image, price, description };
+                }
+            } else {
+                products.push({ id: Date.now().toString(), name, image, price, description });
+            }
+
+            saveProducts();
+
+            // Show modal and redirect after delay
+            const message = editingProductId ? "Product updated successfully!" : "Product added successfully!";
+            showSuccessModal(message);
+        }
+
+        function previewImage(event) {
+            const file = event.target.files[0];
+
+            if (file && file.size > 1048576) {
+                alert("Image file size should not exceed 1MB.");
+                event.target.value = '';
+                document.getElementById('imagePreview').src = "https://placehold.co/300x300?text=Product+Image&font=roboto";
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function () {
+                const imagePreview = document.getElementById('imagePreview');
+                imagePreview.src = reader.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function setupLiveValidation() {
+            const name = document.getElementById('productName');
+            const price = document.getElementById('productPrice');
+            const description = document.getElementById('productDescription');
+            const image = document.getElementById('productImage');
+
+            name.addEventListener('input', () => {
+                const value = name.value.trim();
+                name.classList.toggle('is-invalid', value.length < 2);
+            });
+
+            price.addEventListener('input', () => {
+                const value = parseFloat(price.value);
+                price.classList.toggle('is-invalid', isNaN(value) || value <= 0);
+            });
+
+            description.addEventListener('input', () => {
+                const value = description.value.trim();
+                description.classList.toggle('is-invalid', value.length < 10);
+            });
+
+            image.addEventListener('change', () => {
+                const file = image.files[0];
+                const isAddMode = !window.location.search.includes('edit');
+
+                if (!file && isAddMode) {
+                    image.classList.add('is-invalid');
+                } else if (file && (!file.type.startsWith('image/') || file.size > 1048576)) {
+                    image.classList.add('is-invalid');
+                } else {
+                    image.classList.remove('is-invalid');
+                }
+            });
+        }
+
+        function showSuccessModal(message) {
+            // If Bootstrap modal element doesn't exist, create one
+            if (!document.getElementById('successModal')) {
+                const modalHTML = `
+                <div class="modal fade" id="successModal" tabindex="-1" role="dialog" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                      <div class="modal-body text-center">
+                        <p id="successMessage" class="mb-0">${message}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                `;
+                document.body.insertAdjacentHTML('beforeend', modalHTML);
+            } else {
+                document.getElementById('successMessage').textContent = message;
+            }
+
+            $('#successModal').modal('show');
+
+            setTimeout(() => {
+                $('#successModal').modal('hide');
+                window.location.href = 'index2.html';
+            }, 1500);
+        }
+    </script>
+
+
+    <!-- jQuery & Bootstrap JS for modal -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>
